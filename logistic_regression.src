@@ -1,0 +1,69 @@
+# Machine Learning Module
+# This code performs the actual multi-party computation
+# The shares of the training data received from clients are loaded
+# and fed into a logistic regression.
+# This code is supposed to run on three separate machines
+
+from Compiler import ml
+import os 
+
+# Optimizations to reduce communications overhead
+program.use_trunc_pr = True
+program.use_split(3)
+
+# Set precision of floating point numbers
+# Must be identical to the values set in create_dataset
+sfix.set_precision(16, 31)
+cfix.set_precision(16, 31)
+
+
+# Set parameters
+DEBUG = §DEBUG_FLAG§
+BATCH = §BATCHSIZE§
+NUM_ITERATIONS = §NUMITER§
+NUM_ATTRIBUTES = §NUMATTR§
+NUM_EXAMPLES = §NUMEX§
+APPROX = §APPROX_TYPE§
+
+
+X = Matrix(NUM_EXAMPLES, NUM_ATTRIBUTES,sfix)
+Y = Matrix(NUM_EXAMPLES,1, sint)
+
+X = Matrix(NUM_EXAMPLES, NUM_ATTRIBUTES,sfix)
+Y = Matrix(NUM_EXAMPLES,1, sfix)
+
+offset = cint(0)
+for i in range(NUM_EXAMPLES):
+	X[i].read_from_file(offset)
+	offset = offset + NUM_ATTRIBUTES
+	Y[i].read_from_file(offset)
+	offset = offset + 1
+
+ml.Layer.back_batch_size = BATCH
+dense = ml.Dense(NUM_EXAMPLES, NUM_ATTRIBUTES, 1)
+layers = [dense, ml.Output(NUM_EXAMPLES, debug=False, approx=APPROX)]
+sgd = ml.SGD(layers, NUM_ITERATIONS, debug=False, report_loss=False)
+
+for i in range(NUM_EXAMPLES):
+	sgd.layers[0].X[i][0] = X[i]
+
+tmp = [sint(t[0]) for t in Y]
+sgd.layers[1].Y.assign(tmp)
+
+sgd.reset()
+sgd.run(batch_size=BATCH)
+
+sgd.layers[0].W.write_weights_to_file()
+sgd.layers[0].b.write_weights_to_file()
+
+if DEBUG:
+	print_ln("Weights:")
+	for w in sgd.layers[0].W:
+		tmp = w.reveal()	
+		print_ln("%s",tmp)
+		
+	for w in sgd.layers[0].b:
+		print_ln("Bias:")
+		tmp = w.reveal()
+		print_ln("%s",tmp)
+
