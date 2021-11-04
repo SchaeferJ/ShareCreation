@@ -34,7 +34,7 @@ server:
 	python ./MP-SPDZ/compile.py -R $(RINGSIZE) logistic_regression.mpc
 	@echo "Done building server code."
 
-tf:
+testfile:
 	sed 's/§NUMATTR§/'$(NUM_ATTRIBUTES)'/g; s/§NUMEX§/'$(NUM_EXAMPLES)'/g; s/§DEBUG_FLAG§/'$(DEBUG)'/g; s/§BATCHSIZE§/'$(BATCH)'/g; s/§NUMITER§/'$(N_ITERATIONS)'/g;s/§APPROX_TYPE§/'$(APPROX)'/g' ./test.src > ./MP-SPDZ/Programs/Source/test.mpc
 	@echo "OK. Compiling..."
 	python ./MP-SPDZ/compile.py -R $(RINGSIZE) test.mpc
@@ -46,7 +46,7 @@ runclient:
 runserver:
 	cd MP-SPDZ && ./Scripts/ring.sh -R $(RINGSIZE) logistic_regression
 
-runtf:
+runttest:
 	cd MP-SPDZ && ./Scripts/ring.sh -R $(RINGSIZE) test
 
 cleanstate:
